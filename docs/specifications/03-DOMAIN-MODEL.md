@@ -424,6 +424,7 @@ Snapshot
 - 스냅샷 생성 당시의 프로필 기준을 함께 보존한다.
 - 계산 결과와 규칙 결과의 버전을 기록한다.
 - 같은 기간의 스냅샷을 자동으로 덮어쓰지 않는다.
+- 같은 기간에 여러 스냅샷이 있으면 파일명이나 식별자에 `snapshotId`를 포함한다.
 - 기존 스냅샷을 교체하려면 명시적인 사용자 동작이 필요하다.
 - AI 보고서 본문은 스냅샷에 포함하지 않고 `ReviewReport`가 스냅샷을 참조한다.
 
@@ -584,6 +585,8 @@ RecommendationOption은 자동 실행 지시가 아니며, AI가 임의로 새�
 | 항목 | 설명 |
 | ---- | ---- |
 | optionId | 추천안 식별자 |
+| recommendationVersion | 추천 생성 규칙 버전 |
+| templateVersion | 추천 템플릿 버전 |
 | title | 추천안 이름 |
 | strategy | 핵심 전략 |
 | targetGoals | 우선적으로 고려한 목표 |
