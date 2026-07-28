@@ -8,7 +8,7 @@
 
 ---
 
-## 2. 전체 사용자 흐름
+## 2. 8주 MVP 사용자 흐름
 
 ```mermaid
 flowchart TD
@@ -26,23 +26,9 @@ flowchart TD
     ANALYSIS["4. 재무 상태 분석<br/>지표·목표 진행률·규칙 경고"]
     ANALYSIS_RESULT["분석 결과 확인"]
 
-    RECOMMENDATION["5. 복수 추천안 생성"]
-    OPTION_REVIEW["추천안 비교<br/>안정·균형·성장 등"]
-    USER_DECISION{"사용자 결정"}
-
-    ADD_CONDITION["추가 조건 입력"]
-    CONDITION_VALIDATION{"추가 조건이<br/>유효한가?"}
-    CONDITION_CONFLICT{"기존 조건 또는 목표와<br/>충돌하는가?"}
-    RESOLVE_CONFLICT["조건 또는 목표 우선순위 수정"]
-    REANALYSIS["조건 반영 재분석"]
-
-    EDIT_DATA["현재 재무 데이터 수정"]
-    SELECT_OPTION["추천안 선택"]
-    ANALYSIS_ONLY["분석만 저장"]
-    PENDING["추천 결정 보류"]
-    CLOSE_NO_SELECTION["추천 없이 종료"]
-
-    SNAPSHOT["6. 스냅샷 저장"]
+    SNAPSHOT["5. 스냅샷 저장"]
+    COMPARISON["6. 이전 월 스냅샷과 비교"]
+    AI_REPORT["7. AI 보고서 생성<br/>스냅샷 참조"]
     END([완료])
 
     START --> REGISTER
@@ -60,6 +46,42 @@ flowchart TD
     DATA_VALIDATION -- "예" --> ANALYSIS
 
     ANALYSIS --> ANALYSIS_RESULT
+    ANALYSIS_RESULT --> SNAPSHOT
+    SNAPSHOT --> COMPARISON
+    COMPARISON --> AI_REPORT
+    AI_REPORT --> END
+```
+
+---
+
+## 2.1 타깃 사용자 흐름
+
+추천안 생성과 재분석 기능이 추가된 뒤의 목표 흐름은 다음과 같다.
+
+```mermaid
+flowchart TD
+    ANALYSIS_RESULT["분석 결과 확인"]
+
+    RECOMMENDATION["규칙 기반 추천안 생성"]
+    OPTION_REVIEW["추천안 비교<br/>안정·균형·성장 등"]
+    USER_DECISION{"사용자 결정"}
+
+    ADD_CONDITION["추가 조건 입력"]
+    CONDITION_VALIDATION{"추가 조건이<br/>유효한가?"}
+    CONDITION_CONFLICT{"기존 조건 또는 목표와<br/>충돌하는가?"}
+    RESOLVE_CONFLICT["조건 또는 목표 우선순위 수정"]
+    REANALYSIS["조건 반영 재분석"]
+
+    EDIT_DATA["현재 재무 데이터 수정"]
+    SELECT_OPTION["추천안 선택"]
+    ANALYSIS_ONLY["분석만 저장"]
+    PENDING["추천 결정 보류"]
+    CLOSE_NO_SELECTION["추천 없이 종료"]
+
+    SNAPSHOT["스냅샷 저장"]
+    COMPARISON["이전 월 스냅샷과 비교"]
+    AI_REPORT["AI 보고서 생성<br/>스냅샷 참조"]
+
     ANALYSIS_RESULT --> RECOMMENDATION
     RECOMMENDATION --> OPTION_REVIEW
     OPTION_REVIEW --> USER_DECISION
@@ -71,8 +93,6 @@ flowchart TD
     USER_DECISION -- "결정 보류" --> PENDING
     USER_DECISION -- "추천 없이 종료" --> CLOSE_NO_SELECTION
 
-    EDIT_DATA --> FINANCIAL_INPUT
-
     ADD_CONDITION --> CONDITION_VALIDATION
     CONDITION_VALIDATION -- "아니오" --> ADD_CONDITION
     CONDITION_VALIDATION -- "예" --> CONDITION_CONFLICT
@@ -83,12 +103,14 @@ flowchart TD
     CONDITION_CONFLICT -- "아니오" --> REANALYSIS
     REANALYSIS --> RECOMMENDATION
 
+    EDIT_DATA --> ANALYSIS_RESULT
     SELECT_OPTION --> SNAPSHOT
     ANALYSIS_ONLY --> SNAPSHOT
     PENDING --> SNAPSHOT
     CLOSE_NO_SELECTION --> SNAPSHOT
 
-    SNAPSHOT --> END
+    SNAPSHOT --> COMPARISON
+    COMPARISON --> AI_REPORT
 ```
 
 ---
@@ -165,11 +187,13 @@ flowchart TD
 
 ## 5. 추천 및 재분석 반복 흐름
 
+이 흐름은 8주 MVP 이후 추천 기능을 추가할 때 적용한다.
+
 ```mermaid
 flowchart TD
     START([분석 결과])
 
-    GENERATE["2~3개 추천안 생성"]
+    GENERATE["2~3개 규칙 기반 추천안 생성"]
     COMPARE["추천안 비교<br/>근거·효과·단점·위험"]
     DECISION{"마음에 드는<br/>추천안이 있는가?"}
 
@@ -188,6 +212,7 @@ flowchart TD
     EXIT["추천 없이 종료"]
 
     SNAPSHOT["스냅샷 저장"]
+    AI_REPORT["AI 보고서 생성<br/>스냅샷 참조"]
 
     START --> GENERATE
     GENERATE --> COMPARE
@@ -217,6 +242,7 @@ flowchart TD
     ANALYSIS_ONLY --> SNAPSHOT
     PENDING --> SNAPSHOT
     EXIT --> SNAPSHOT
+    SNAPSHOT --> AI_REPORT
 ```
 
 ---
@@ -302,12 +328,15 @@ stateDiagram-v2
     RecommendationPending --> SnapshotSaved
     ClosedWithoutSelection --> SnapshotSaved
 
-    SnapshotSaved --> [*]
+    SnapshotSaved --> ReportGenerated
+    ReportGenerated --> [*]
 ```
 
 ---
 
 ## 8. 주요 데이터 흐름
+
+추천 생성기와 추가 조건은 타깃 흐름에서만 사용한다.
 
 ```mermaid
 flowchart LR
@@ -321,8 +350,9 @@ flowchart LR
 
     ENGINE["분석 엔진"]
     RULES["규칙 엔진"]
-    RECOMMENDER["추천 생성기"]
+    RECOMMENDER["규칙 기반 추천 생성기"]
     SNAPSHOT["스냅샷"]
+    REPORT["AI 보고서"]
 
     USER --> PROFILE
     USER --> GOALS
@@ -347,4 +377,5 @@ flowchart LR
     ENGINE --> SNAPSHOT
     RULES --> SNAPSHOT
     RECOMMENDER --> SNAPSHOT
+    SNAPSHOT --> REPORT
 ```

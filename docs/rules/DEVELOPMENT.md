@@ -67,15 +67,21 @@ data/
 ├── current/
 │   ├── assets.json
 │   ├── liabilities.json
-│   └── holdings.json
+│   ├── holdings.json
+│   └── cash-flow.json
 ├── snapshots/
 │   └── YYYY-MM/
-│       └── snapshot.json
+│       ├── snapshot-{snapshotId}.json
+│       └── latest.json
 └── reports/
     └── YYYY-MM/
-        ├── review.json
-        └── review.md
+        └── {snapshotId}/
+            ├── review.json
+            └── review.md
 ```
+
+`holdings.json`은 투자상품 입력을 분리해 저장하기 위한 파일이다.
+도메인 계산에서는 투자상품을 `Asset`으로 변환해 처리한다.
 
 실제 개인 데이터가 저장되는 `data/` 디렉터리는 Git에 커밋하지 않는다.
 
@@ -98,7 +104,7 @@ src/test/resources/
 
 구조화된 애플리케이션 데이터는 기본적으로 JSON을 사용한다.
 
-- JSON: 프로필, 자산, 부채, 보유 종목, 스냅샷
+- JSON: 프로필, 자산, 부채, 보유 종목, 현금흐름, 스냅샷, AI 보고서
 - Markdown: 사용자가 읽는 재무 리뷰
 - CSV: 데이터 가져오기와 내보내기
 - YAML 또는 환경변수: 애플리케이션 설정
@@ -231,7 +237,8 @@ YYYY-MM-DD
 스냅샷은 생성된 시점의 재무 상태를 보존한다.
 
 - 생성된 스냅샷을 현재 데이터 변경에 따라 수정하지 않는다.
-- 같은 기간의 스냅샷을 덮어쓸지 새 버전을 만들지 명확하게 정한다.
+- 같은 기간에 여러 스냅샷을 저장할 수 있으며, 스냅샷 파일명에는 `snapshotId`를 포함한다.
+- `latest.json`은 같은 기간의 최신 스냅샷을 가리키는 인덱스 파일로만 사용한다.
 - 스냅샷에는 계산 기준일과 스키마 버전을 기록한다.
 - 당시 사용한 가격, 환율, 규칙 버전을 추적할 수 있게 한다.
 - 과거 스냅샷을 읽지 못하는 변경은 피한다.

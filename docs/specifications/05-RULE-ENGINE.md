@@ -48,6 +48,7 @@ AI는 경고를 확정적으로 생성하지 않는다. AI는 규칙 엔진이 �
 | RISK_PROFILE_MISMATCH | 투자 성향과 자산구성 불일치 | 성향별 허용 범위 이탈 | MEDIUM |
 | SHORT_TERM_GOAL_RISK_EXPOSURE | 단기 목표자금 위험자산 노출 | 2년 이내 목표자금의 위험자산 비중 과다 | HIGH |
 | MONTHLY_CAPACITY_SHORTFALL | 목표 대비 월 투자 가능 금액 부족 | 필요 적립액 > 월 투자 가능 금액 | HIGH |
+| DEBT_PAYMENT_MISMATCH | 월 부채 상환액 불일치 | 입력 상환액과 부채별 상환액 합계가 다름 | LOW |
 
 ---
 
@@ -161,6 +162,8 @@ triggered = riskyAssetWeight > riskProfileLimit
 
 MVP에서는 목표와 자산 연결 정보가 없으면 `NOT_EVALUATED`로 처리한다.
 
+8주 MVP에서 목표와 자산 연결 UI가 아직 없다면 이 규칙은 구현하되 기본적으로 `NOT_EVALUATED`를 반환한다.
+
 ### MONTHLY_CAPACITY_SHORTFALL
 
 필요 데이터:
@@ -173,6 +176,21 @@ MVP에서는 목표와 자산 연결 정보가 없으면 `NOT_EVALUATED`로 처�
 ```text
 triggered = requiredMonthlyContribution > availableMonthlyInvestment
 ```
+
+### DEBT_PAYMENT_MISMATCH
+
+필요 데이터:
+
+- 현금흐름의 월 부채 상환액
+- 부채별 월 상환액
+
+평가:
+
+```text
+triggered = monthlyDebtPayment != sum(liabilities.monthlyPayment)
+```
+
+부채별 월 상환액 중 누락된 값이 있으면 `NOT_EVALUATED`로 처리한다.
 
 ---
 

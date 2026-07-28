@@ -134,8 +134,11 @@ essentialMonthlyExpense = monthlyFixedExpense + monthlyDebtPayment
 | SAVINGS_RATE | 월 저축률 |
 | ASSET_ALLOCATION | 목표 자산군별 현재 비중 |
 | DEBT_REDUCTION | 기준 부채 잔액 대비 감소액 |
+| TARGET_AMOUNT_BY_DATE | 목표와 연결된 현재 적립액 또는 사용자가 지정한 현재값 |
 
 목표 진행률은 목표 유형에 따라 금액, 비율, 개월 수 단위를 구분한다.
+
+주택자금, 은퇴자금, 결혼자금 같은 목적성 금액 목표는 `TARGET_AMOUNT_BY_DATE`로 계산한다.
 
 ---
 
