@@ -33,13 +33,17 @@ FinancialProfile
     ├── CurrentFinancialState
     │       ├── Assets
     │       ├── Liabilities
+    │       ├── MonthlyCashFlow
     │       └── FinancialGoals
     │
     └── Snapshots
             ├── FinancialMetrics
             ├── FinancialWarnings
             ├── PeriodComparison
-            └── ReviewReport
+            └── RecommendationOptions
+
+ReviewReport
+    └── Snapshot 참조
 ```
 
 핵심 흐름은 다음과 같다.
@@ -152,8 +156,6 @@ FinancialProfile은 자산이나 부채 자체가 아니라, 재무 상태를 �
 | 항목                      | 설명                              |
 | ------------------------- | --------------------------------- |
 | baseCurrency              | 모든 분석 결과를 표시할 기준 통화 |
-| monthlyIncome             | 월 소득                           |
-| monthlyExpense            | 월 지출                           |
 | investmentHorizon         | 예상 투자 기간                    |
 | riskTolerance             | 사용자가 설정한 위험 성향         |
 | emergencyFundTargetMonths | 목표 비상자금 개월 수             |
@@ -162,7 +164,6 @@ FinancialProfile은 자산이나 부채 자체가 아니라, 재무 상태를 �
 ### 규칙
 
 - 기준 통화는 반드시 존재해야 한다.
-- 월 소득과 월 지출은 음수가 될 수 없다.
 - 비상자금 목표 개월 수는 0보다 커야 한다.
 - 목표 자산배분의 전체 합은 100%여야 한다.
 - 위험 성향은 AI가 임의로 변경하지 않는다.
@@ -184,6 +185,7 @@ FinancialProfile은 자산이나 부채 자체가 아니라, 재무 상태를 �
 CurrentFinancialState
  ├── Assets
  ├── Liabilities
+ ├── MonthlyCashFlow
  └── FinancialGoals
 ```
 
@@ -194,6 +196,7 @@ CurrentFinancialState
 | asOfDate    | 현재 상태의 기준일 |
 | assets      | 보유 자산          |
 | liabilities | 보유 부채          |
+| cashFlow    | 월 단위 현금흐름   |
 | goals       | 재무 목표          |
 | updatedAt   | 마지막 수정 시각   |
 
@@ -204,6 +207,31 @@ CurrentFinancialState
 - 모든 금액에는 통화가 있어야 한다.
 - 모든 평가 금액에는 기준일이 있어야 한다.
 - 입력 데이터가 유효하지 않으면 저장하지 않는다.
+
+---
+
+## 5.1 MonthlyCashFlow
+
+### 정의
+
+월 단위 현금흐름 계산에 필요한 소득, 지출, 상환액, 투자 가능 금액을 나타낸다.
+
+### 주요 정보
+
+| 항목                       | 설명                           |
+| -------------------------- | ------------------------------ |
+| monthlyIncome              | 세후 기준 월평균 소득          |
+| monthlyFixedExpense        | 주거비, 보험료 등 고정지출     |
+| monthlyVariableExpense     | 식비, 여가비 등 변동지출       |
+| monthlyDebtPayment         | 월 부채 상환액                 |
+| availableMonthlyInvestment | 정기적으로 투자할 수 있는 금액 |
+
+### 규칙
+
+- 각 금액은 `Money`로 관리한다.
+- 소득과 지출은 음수가 될 수 없다.
+- `monthlyDebtPayment`는 부채별 `monthlyPayment` 합계와 다를 수 있으며, 차이는 경고 근거로 사용할 수 있다.
+- 월 저축액과 월 저축률은 이 모델의 값을 사용해 계산한다.
 
 ---
 
@@ -316,13 +344,14 @@ CurrentFinancialState
 
 ### 목표 유형
 
-| 유형             | 설명                |
-| ---------------- | ------------------- |
-| EMERGENCY_FUND   | 비상자금 확보       |
-| NET_WORTH        | 목표 순자산 달성    |
-| SAVINGS_RATE     | 목표 저축률 유지    |
-| ASSET_ALLOCATION | 목표 자산배분 유지  |
-| DEBT_REDUCTION   | 목표 부채 수준 달성 |
+| 유형                  | 설명                         |
+| --------------------- | ---------------------------- |
+| EMERGENCY_FUND        | 비상자금 확보                |
+| NET_WORTH             | 목표 순자산 달성             |
+| SAVINGS_RATE          | 목표 저축률 유지             |
+| ASSET_ALLOCATION      | 목표 자산배분 유지           |
+| DEBT_REDUCTION        | 목표 부채 수준 달성          |
+| TARGET_AMOUNT_BY_DATE | 특정 시점까지 금액 목표 달성 |
 
 ### 주요 정보
 
@@ -346,6 +375,7 @@ CurrentFinancialState
 - 목표값의 단위는 목표 유형과 일치해야 한다.
 - 금액 목표에는 통화가 있어야 한다.
 - 목표 자산배분은 자산 유형별 비율로 구성한다.
+- 주택자금, 은퇴자금, 결혼자금 같은 목적성 금액 목표는 `TARGET_AMOUNT_BY_DATE`로 표현한다.
 - AI가 사용자의 목표값을 임의로 변경할 수 없다.
 - 목표 달성 여부는 결정론적인 계산 결과로 판단한다.
 
@@ -366,23 +396,26 @@ Snapshot
  ├── Profile 기준값
  ├── Assets
  ├── Liabilities
+ ├── MonthlyCashFlow
  ├── FinancialGoals
  ├── FinancialMetrics
- └── FinancialWarnings
+ ├── FinancialWarnings
+ └── RecommendationOptions
 ```
 
 ### 주요 정보
 
-| 항목               | 설명                  |
-| ------------------ | --------------------- |
-| id                 | 스냅샷 식별자         |
-| period             | 분석 기간             |
-| capturedAt         | 생성 시각             |
-| financialState     | 해당 시점의 재무 상태 |
-| metrics            | 계산된 재무 지표      |
-| warnings           | 규칙 엔진 결과        |
-| calculationVersion | 계산 규칙 버전        |
-| ruleSetVersion     | 경고 규칙 버전        |
+| 항목                  | 설명                  |
+| --------------------- | --------------------- |
+| id                    | 스냅샷 식별자         |
+| period                | 분석 기간             |
+| capturedAt            | 생성 시각             |
+| financialState        | 해당 시점의 재무 상태 |
+| metrics               | 계산된 재무 지표      |
+| warnings              | 규칙 엔진 결과        |
+| recommendationOptions | 규칙 기반 추천안 목록 |
+| calculationVersion    | 계산 규칙 버전        |
+| ruleSetVersion        | 경고 규칙 버전        |
 
 ### 규칙
 
@@ -392,6 +425,7 @@ Snapshot
 - 계산 결과와 규칙 결과의 버전을 기록한다.
 - 같은 기간의 스냅샷을 자동으로 덮어쓰지 않는다.
 - 기존 스냅샷을 교체하려면 명시적인 사용자 동작이 필요하다.
+- AI 보고서 본문은 스냅샷에 포함하지 않고 `ReviewReport`가 스냅샷을 참조한다.
 
 ---
 
@@ -537,13 +571,48 @@ FinancialWarning은 투자 명령이 아니라 사용자가 검토해야 할 상
 
 ---
 
-## 13. ReviewReport
+## 13. RecommendationOption
+
+### 정의
+
+애플리케이션 규칙과 템플릿으로 생성한 검토 가능한 재무 전략 선택지다.
+
+RecommendationOption은 자동 실행 지시가 아니며, AI가 임의로 새로 생성하지 않는다.
+
+### 주요 정보
+
+| 항목 | 설명 |
+| ---- | ---- |
+| optionId | 추천안 식별자 |
+| title | 추천안 이름 |
+| strategy | 핵심 전략 |
+| targetGoals | 우선적으로 고려한 목표 |
+| rationale | 추천 근거 |
+| requiredActions | 사용자가 검토할 행동 |
+| expectedBenefits | 기대할 수 있는 효과 |
+| tradeoffs | 단점과 포기해야 할 요소 |
+| risks | 주의해야 할 위험 |
+| constraints | 반영한 사용자 조건 |
+| affectedMetrics | 영향을 받을 재무 지표 |
+
+### 규칙
+
+- 추천안은 계산 결과와 규칙 경고를 근거로 생성한다.
+- 입력 데이터에 없는 금액, 수익률, 확률을 만들지 않는다.
+- 직접적인 매수·매도 명령을 포함하지 않는다.
+- 사용자가 선택하지 않은 추천안도 분석 세션 기록에 포함할 수 있다.
+- 추천안 생성 규칙과 템플릿은 버전으로 관리한다.
+
+---
+
+## 14. ReviewReport
 
 ### 정의
 
 스냅샷, 계산 결과, 기간 비교, 경고 결과를 기반으로 AI가 생성한 설명이다.
 
 ReviewReport는 분석 결과를 설명하지만 원본 계산 결과를 변경하지 않는다.
+ReviewReport는 스냅샷 저장 이후 생성되며, `snapshotId`로 기준 스냅샷을 참조한다.
 
 ### 주요 내용
 
@@ -585,7 +654,7 @@ ReviewReport는 분석 결과를 설명하지만 원본 계산 결과를 변경�
 
 ---
 
-## 14. 변경 가능 여부
+## 15. 변경 가능 여부
 
 | 모델                  | 변경 가능 여부 | 설명                      |
 | --------------------- | -------------- | ------------------------- |
@@ -598,11 +667,12 @@ ReviewReport는 분석 결과를 설명하지만 원본 계산 결과를 변경�
 | FinancialMetric       | 직접 수정 불가 | 입력 데이터에서 다시 계산 |
 | FinancialWarning      | 직접 수정 불가 | 규칙 엔진에서 다시 평가   |
 | PeriodComparison      | 직접 수정 불가 | 두 스냅샷에서 다시 계산   |
-| ReviewReport          | 재생성 가능    | 기존 보고서는 보존 가능   |
+| RecommendationOption  | 직접 수정 불가 | 규칙과 템플릿에서 다시 생성 |
+| ReviewReport          | 재생성 가능    | 스냅샷을 참조하며 기존 보고서는 보존 가능 |
 
 ---
 
-## 15. 핵심 도메인 규칙
+## 16. 핵심 도메인 규칙
 
 1. 현재 재무 상태와 과거 스냅샷을 분리한다.
 2. 생성된 스냅샷은 기본적으로 변경하지 않는다.
@@ -617,7 +687,7 @@ ReviewReport는 분석 결과를 설명하지만 원본 계산 결과를 변경�
 
 ---
 
-## 16. MVP에서 제외하는 모델
+## 17. MVP에서 제외하는 모델
 
 초기 버전에서는 다음 모델을 별도로 만들지 않는다.
 

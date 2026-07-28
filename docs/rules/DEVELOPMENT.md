@@ -67,7 +67,8 @@ data/
 ├── current/
 │   ├── assets.json
 │   ├── liabilities.json
-│   └── holdings.json
+│   ├── holdings.json
+│   └── cash-flow.json
 ├── snapshots/
 │   └── YYYY-MM/
 │       └── snapshot.json
@@ -76,6 +77,9 @@ data/
         ├── review.json
         └── review.md
 ```
+
+`holdings.json`은 투자상품 입력을 분리해 저장하기 위한 파일이다.
+도메인 계산에서는 투자상품을 `Asset`으로 변환해 처리한다.
 
 실제 개인 데이터가 저장되는 `data/` 디렉터리는 Git에 커밋하지 않는다.
 
@@ -98,7 +102,7 @@ src/test/resources/
 
 구조화된 애플리케이션 데이터는 기본적으로 JSON을 사용한다.
 
-- JSON: 프로필, 자산, 부채, 보유 종목, 스냅샷
+- JSON: 프로필, 자산, 부채, 보유 종목, 현금흐름, 스냅샷, AI 보고서
 - Markdown: 사용자가 읽는 재무 리뷰
 - CSV: 데이터 가져오기와 내보내기
 - YAML 또는 환경변수: 애플리케이션 설정

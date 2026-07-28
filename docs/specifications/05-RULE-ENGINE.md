@@ -161,6 +161,8 @@ triggered = riskyAssetWeight > riskProfileLimit
 
 MVP에서는 목표와 자산 연결 정보가 없으면 `NOT_EVALUATED`로 처리한다.
 
+8주 MVP에서 목표와 자산 연결 UI가 아직 없다면 이 규칙은 구현하되 기본적으로 `NOT_EVALUATED`를 반환한다.
+
 ### MONTHLY_CAPACITY_SHORTFALL
 
 필요 데이터:

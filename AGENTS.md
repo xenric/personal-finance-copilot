@@ -58,6 +58,8 @@ MVP는 다음 스택을 기준으로 구현한다.
   `docs/specifications/05-RULE-ENGINE.md`
 - AI 보고서, 프롬프트, 금지 표현:
   `docs/specifications/06-AI-REPORT.md`
+- 투자 성향 검사, 점수, 결과 산정:
+  `docs/specifications/07-RISK-PROFILE.md`
 
 구현과 명세가 충돌하면 임의로 해석하지 않는다.
 

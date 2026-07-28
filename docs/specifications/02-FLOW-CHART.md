@@ -26,7 +26,7 @@ flowchart TD
     ANALYSIS["4. 재무 상태 분석<br/>지표·목표 진행률·규칙 경고"]
     ANALYSIS_RESULT["분석 결과 확인"]
 
-    RECOMMENDATION["5. 복수 추천안 생성"]
+    RECOMMENDATION["5. 규칙 기반 추천안 생성"]
     OPTION_REVIEW["추천안 비교<br/>안정·균형·성장 등"]
     USER_DECISION{"사용자 결정"}
 
@@ -43,6 +43,7 @@ flowchart TD
     CLOSE_NO_SELECTION["추천 없이 종료"]
 
     SNAPSHOT["6. 스냅샷 저장"]
+    AI_REPORT["7. AI 보고서 생성<br/>스냅샷 참조"]
     END([완료])
 
     START --> REGISTER
@@ -88,7 +89,8 @@ flowchart TD
     PENDING --> SNAPSHOT
     CLOSE_NO_SELECTION --> SNAPSHOT
 
-    SNAPSHOT --> END
+    SNAPSHOT --> AI_REPORT
+    AI_REPORT --> END
 ```
 
 ---
@@ -169,7 +171,7 @@ flowchart TD
 flowchart TD
     START([분석 결과])
 
-    GENERATE["2~3개 추천안 생성"]
+    GENERATE["2~3개 규칙 기반 추천안 생성"]
     COMPARE["추천안 비교<br/>근거·효과·단점·위험"]
     DECISION{"마음에 드는<br/>추천안이 있는가?"}
 
@@ -188,6 +190,7 @@ flowchart TD
     EXIT["추천 없이 종료"]
 
     SNAPSHOT["스냅샷 저장"]
+    AI_REPORT["AI 보고서 생성<br/>스냅샷 참조"]
 
     START --> GENERATE
     GENERATE --> COMPARE
@@ -217,6 +220,7 @@ flowchart TD
     ANALYSIS_ONLY --> SNAPSHOT
     PENDING --> SNAPSHOT
     EXIT --> SNAPSHOT
+    SNAPSHOT --> AI_REPORT
 ```
 
 ---
@@ -302,7 +306,8 @@ stateDiagram-v2
     RecommendationPending --> SnapshotSaved
     ClosedWithoutSelection --> SnapshotSaved
 
-    SnapshotSaved --> [*]
+    SnapshotSaved --> ReportGenerated
+    ReportGenerated --> [*]
 ```
 
 ---
@@ -321,8 +326,9 @@ flowchart LR
 
     ENGINE["분석 엔진"]
     RULES["규칙 엔진"]
-    RECOMMENDER["추천 생성기"]
+    RECOMMENDER["규칙 기반 추천 생성기"]
     SNAPSHOT["스냅샷"]
+    REPORT["AI 보고서"]
 
     USER --> PROFILE
     USER --> GOALS
@@ -347,4 +353,5 @@ flowchart LR
     ENGINE --> SNAPSHOT
     RULES --> SNAPSHOT
     RECOMMENDER --> SNAPSHOT
+    SNAPSHOT --> REPORT
 ```
