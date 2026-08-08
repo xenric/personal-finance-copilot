@@ -1,6 +1,11 @@
 # Compiled class file
 *.class
 
+# Gradle
+.gradle/
+build/
+out/
+
 # Log file
 *.log
 
@@ -32,3 +37,8 @@ data/
 !.env.example
 *.local
 local.*
+
+# IDE
+.idea/
+*.iml
+.vscode/

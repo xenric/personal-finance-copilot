@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: personal-finance-copilot
+
+app:
+  data-root: data
