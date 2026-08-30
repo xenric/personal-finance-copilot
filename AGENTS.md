@@ -28,8 +28,8 @@
 
 MVP는 다음 스택을 기준으로 구현한다.
 
-- Java 21
-- Spring Boot
+- Java 25
+- Spring Boot 4.1
 - Thymeleaf
 - Gradle
 - JUnit 5
