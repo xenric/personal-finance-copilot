@@ -43,3 +43,6 @@ local.*
 .idea/
 *.iml
 .vscode/
+
+# AI
+prompt/
